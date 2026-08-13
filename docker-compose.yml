@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  garos-backend:
+    build: .
+    image: garos-backend:latest
+    container_name: garos-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - garos-data:/var/lib/garos
+      - garos-config:/etc/garos
+    environment:
+      RUST_LOG: "info,garos_backend=info"
+      GAROS__SERVER__BIND_ADDR: "0.0.0.0"
+      GAROS__SERVER__PORT: "8080"
+      GAROS__DATABASE__URL: "sqlite:///var/lib/garos/garos.db"
+      GAROS__FEATURES__MOCK_INTEGRATIONS: "false"
+      GAROS__FEATURES__ENABLE_OTLP: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Optional PostgreSQL backend. Enable with:
+  #   docker compose --profile postgres up
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:16-alpine
+    container_name: garos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: garos
+      POSTGRES_USER: garos
+      POSTGRES_PASSWORD: garos
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  garos-data:
+  garos-config:
+  postgres-data:

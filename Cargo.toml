@@ -1,0 +1,178 @@
+[package]
+name = "garos-backend"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+description = "Production HTTP API for the kryonix-os-control-center to manage diskless garos endpoints on NixOS"
+license = "MIT OR Apache-2.0"
+resolver = "2"
+repository = "https://github.com/kryonix/garos-backend"
+readme = "README.md"
+keywords = ["diskless", "pxe", "nixos", "nftables", "btrfs"]
+categories = ["api-bindings", "network-programming", "web-programming"]
+
+[[bin]]
+name = "garos-backend"
+path = "src/main.rs"
+
+[lib]
+name = "garos_backend"
+path = "src/lib.rs"
+
+[features]
+default = ["sqlite"]
+sqlite = []
+postgres = ["sqlx/postgres", "sqlx/macros"]
+
+# Production-grade, mostly pinned to avoid supply-chain surprises.
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros", "ws", "http2"] }
+tower = { version = "0.5", features = ["limit", "load-shed", "timeout"] }
+tower-http = { version = "0.5", features = [
+    "trace",
+    "cors",
+    "compression-gzip",
+    "compression-br",
+    "request-id",
+    "util",
+    "set-header",
+] }
+hyper = { version = "1", features = ["full"] }
+
+# Async runtime
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "signal",
+    "sync",
+    "time",
+    "fs",
+    "process",
+    "net",
+    "io-util",
+    "parking_lot",
+] }
+tokio-tungstenite = "0.21"
+futures = "0.3"
+async-trait = "0.1"
+
+# Serde / JSON
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_with = "3"
+
+# Database
+sqlx = { version = "0.8", default-features = false, features = [
+    "runtime-tokio-rustls",
+    "sqlite",
+    "macros",
+    "chrono",
+    "uuid",
+    "json",
+    "migrate",
+] }
+
+# LDAP / Samba AD
+ldap3 = { version = "0.11", default-features = false, features = ["tls-rustls"] }
+
+# OpenAPI
+utoipa = { version = "4", features = ["axum_extras", "chrono", "uuid"] }
+utoipa-swagger-ui = { version = "6", features = ["axum"] }
+
+# Tracing / OTel
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "registry", "fmt"] }
+tracing-opentelemetry = "0.23"
+opentelemetry = { version = "0.22" }
+opentelemetry_sdk = { version = "0.22", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.15", default-features = false, features = ["grpc-tonic", "trace"] }
+opentelemetry-semantic-conventions = "0.13"
+
+# Auth
+jsonwebtoken = "9"
+argon2 = { version = "0.5", features = ["password-hash", "std"] }
+rand = "0.8"
+rand_core = "0.6"
+
+# IDs / time
+uuid = { version = "1", features = ["v7", "v4", "serde"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+sha2 = "0.10"
+
+# Errors
+thiserror = "1"
+anyhow = "1"
+
+# CLI
+clap = { version = "4", features = ["derive", "env", "string"] }
+
+# Config
+config = { version = "0.14", default-features = false, features = ["toml", "convert-case"] }
+
+# Rate limiting
+governor = "0.6"
+
+# Concurrent map
+dashmap = "6"
+
+# Bytes
+bytes = "1"
+
+# HTTP client (for examples / optional integrations)
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+
+# Prometheus
+prometheus = { version = "0.13", features = ["process"] }
+
+# System / process utilities
+nix = { version = "0.28", default-features = false, features = ["fs", "net", "feature", "process"] }
+which = "6"
+shell-escape = "0.1"
+
+# Validation
+validator = { version = "0.18", features = ["derive"] }
+
+# Zero-copy helpers
+arc-swap = "1"
+
+# Misc
+once_cell = "1"
+url = "2"
+mime = "0.3"
+percent-encoding = "2"
+ipnetwork = "0.20"
+mac_address = "0.7"
+base64 = "0.22"
+dotenvy = "0.15"
+walkdir = "2"
+parking_lot = "0.12"
+csv = "1"
+
+[dev-dependencies]
+proptest = "1"
+proptest-derive = "0.4"
+wiremock = "0.6"
+testcontainers = "0.20"
+tokio = { version = "1", features = ["test-util", "macros", "rt-multi-thread"] }
+tower = { version = "0.5", features = ["util"] }
+axum-test = "16"
+hyper = "1"
+serde_json = "1"
+assert-json-diff = "2"
+tempfile = "3"
+mockall = "0.12"
+mockito = "1"
+pretty_assertions = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = 1
+incremental = true

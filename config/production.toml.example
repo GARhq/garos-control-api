@@ -1,0 +1,42 @@
+[server]
+bind_addr = "0.0.0.0"
+port = 8080
+request_timeout_secs = 30
+body_size_limit = 2097152
+graceful_shutdown_secs = 30
+
+[database]
+url = "sqlite:///var/lib/garos/garos.db"
+max_connections = 32
+min_connections = 4
+acquire_timeout_secs = 5
+run_migrations = true
+
+[auth]
+# Generate with: openssl genpkey -algorithm RSA -out priv.pem -pkeyopt rsa_keygen_bits:2048
+# openssl rsa -in priv.pem -pubout -out pub.pem
+jwt_private_key_path = "/etc/garos/jwt/priv.pem"
+jwt_public_key_path = "/etc/garos/jwt/pub.pem"
+jwt_issuer = "garos.kryonix.local"
+jwt_audience = "garos-api"
+access_token_ttl_secs = 900
+refresh_token_ttl_secs = 604800
+argon2_cost = 65540
+
+[ratelimit]
+requests_per_minute = 120
+burst = 30
+
+[telemetry]
+otlp_endpoint = "http://otel-collector:4317"
+service_name = "garos-backend"
+environment = "production"
+
+[cors]
+allowed_origins = ["https://control.kryonix.local"]
+
+[features]
+enable_postgres = false
+enable_otlp = true
+mock_integrations = false
+seed_admin = false

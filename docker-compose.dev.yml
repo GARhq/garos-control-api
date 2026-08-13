@@ -1,0 +1,22 @@
+services:
+  garos-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: garos-backend:dev
+    container_name: garos-backend-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/build
+      - cargo-cache:/usr/local/cargo/registry
+      - target:/build/target
+    environment:
+      RUST_LOG: "debug,garos_backend=debug,tower_http=info"
+      GAROS__FEATURES__MOCK_INTEGRATIONS: "true"
+      GAROS__DATABASE__URL: "sqlite::memory:"
+    command: cargo watch -x run
+
+volumes:
+  cargo-cache:
+  target:

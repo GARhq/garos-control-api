@@ -1,0 +1,89 @@
+[server]
+bind_addr = "0.0.0.0"
+port = 8080
+request_timeout_secs = 30
+body_size_limit = 2097152
+graceful_shutdown_secs = 15
+
+[database]
+url = "sqlite::memory:"
+max_connections = 16
+min_connections = 2
+acquire_timeout_secs = 5
+run_migrations = true
+
+[auth]
+jwt_issuer = "garos-backend"
+jwt_audience = "garos-api"
+access_token_ttl_secs = 900
+refresh_token_ttl_secs = 604800
+argon2_cost = 65540
+idempotency_ttl_secs = 86400
+# For dev. In production, set jwt_secret via env or use a key pair.
+jwt_secret = "dev-secret-change-me-please-this-must-be-long-enough-32+"
+
+[ratelimit]
+requests_per_minute = 600
+burst = 60
+
+[telemetry]
+otlp_endpoint = ""
+service_name = "garos-backend"
+environment = "development"
+sample_ratio = 1.0
+
+[cors]
+allowed_origins = ["*"]
+
+[features]
+enable_postgres = false
+enable_otlp = false
+mock_integrations = true
+seed_admin = true
+
+[logging]
+format = "pretty"
+level = "info,garos_backend=debug,tower_http=info,sqlx=warn"
+
+[integrations]
+[integrations.nix]
+binary_path = "/run/current-system/sw/bin/nix"
+store_path = "/nix/store"
+build_timeout_secs = 3600
+flake_dir = "/etc/garos/flake"
+
+[integrations.samba]
+realm = "KRYONIX.LOCAL"
+workgroup = "KRYONIX"
+dc_host = "127.0.0.1"
+ldap_base_dn = "DC=kryonix,DC=local"
+ldap_bind_dn = "cn=Administrator,CN=Users,DC=kryonix,DC=local"
+ldap_bind_password_path = "/etc/garos/samba-bind-pass"
+use_tls = true
+ldap_port = 636
+
+[integrations.btrfs]
+mountpoint = "/srv/garos"
+binary_path = "/run/current-system/sw/bin/btrfs"
+
+[integrations.nftables]
+table_name = "garos"
+family = "inet"
+binary_path = "/run/current-system/sw/bin/nft"
+
+[integrations.systemd]
+use_dbus = true
+systemctl_binary = "/run/current-system/sw/bin/systemctl"
+
+[integrations.journald]
+max_bytes = 16777216
+timeout_secs = 30
+
+[integrations.wol]
+broadcast_addr = "255.255.255.255"
+port = 9
+
+[integrations.pxe]
+tftp_root = "/srv/garos/tftp"
+http_root = "/srv/garos/http"
+menu_timeout_secs = 10
