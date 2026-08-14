@@ -4,6 +4,7 @@ use crate::auth::extractor::CurrentUser;
 use crate::domain::user::*;
 use crate::error::AppError;
 use crate::state::AppState;
+use validator::Validate;
 use axum::extract::{ConnectInfo, State};
 use axum::http::HeaderMap;
 use axum::response::IntoResponse;

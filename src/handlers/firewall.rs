@@ -4,6 +4,7 @@ use crate::auth::extractor::CurrentUser;
 use crate::domain::firewall::*;
 use crate::error::AppError;
 use crate::state::AppState;
+use validator::Validate;
 use axum::extract::{Path, Query, State};
 use axum::Json;
 use serde::Deserialize;

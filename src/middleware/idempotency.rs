@@ -10,7 +10,9 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
-use std::time::{Duration, Instant};
+use std::time::Duration;
+use std::time::Instant as StdInstant;
+use axum::http::StatusCode;
 
 const MAX_BODY: usize = 4 * 1024 * 1024;
 
@@ -18,7 +20,28 @@ const MAX_BODY: usize = 4 * 1024 * 1024;
 pub struct CachedResponse {
     pub status: u16,
     pub body: Vec<u8>,
-    pub stored_at: Instant,
+    #[serde(with = "instant_serde")]
+    pub stored_at: std::time::Instant,
+}
+
+mod instant_serde {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    pub fn serialize<S: Serializer>(t: &std::time::Instant, s: S) -> Result<S::Ok, S::Error> {
+        let dur = t.duration_since(*REGRESS).unwrap_or_default();
+        dur.as_secs().serialize(s)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<std::time::Instant, D::Error> {
+        let secs = u64::deserialize(d)?;
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+        let offset = now.saturating_sub(secs);
+        Ok(*REGRESS + std::time::Duration::from_secs(offset))
+    }
+
+    use once_cell::sync::Lazy;
+    static REGRESS: Lazy<std::time::Instant> = Lazy::new(std::time::Instant::now);
 }
 
 #[derive(Debug, Default)]
@@ -91,7 +114,7 @@ pub async fn middleware(req: Request, next: Next) -> Response {
 
     if let Some(state) = req.extensions().get::<axum::extract::State<crate::state::AppState>>() {
         if let Some(hit) = state.idempotency.get(&store_key) {
-            let mut resp = (http::StatusCode::from_u16(hit.status).unwrap(), hit.body.clone())
+            let mut resp = (StatusCode::from_u16(hit.status).unwrap(), hit.body.clone())
                 .into_response();
             resp.headers_mut()
                 .insert("idempotency-replayed", "true".parse().unwrap());

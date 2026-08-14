@@ -29,7 +29,7 @@ fn image_view(row: ImageRow) -> ImageView {
 
 impl ImageRow {
     pub fn id(&self) -> Uuid {
-        Uuid::parse_str(&self.id).unwrap_or_else(|_| Uuid::nil)
+        Uuid::parse_str(&self.id).unwrap_or_else(|_| Uuid::nil())
     }
 }
 

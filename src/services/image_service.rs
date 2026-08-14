@@ -5,10 +5,11 @@ use crate::db::repositories::audit::AuditRepo;
 use crate::db::repositories::images::ImageRepo;
 use crate::domain::image::*;
 use crate::error::AppError;
-use crate::integrations::nix::NixIntegration;
-use crate::integrations::pxe::PxeIntegration;
+use crate::integrations::nix::{Nix, NixIntegration};
+use crate::integrations::pxe::{Pxe, PxeIntegration};
 use crate::realtime::events::Event;
 use crate::realtime::hub::RealtimeHub;
+use validator::Validate;
 use std::sync::Arc;
 use uuid::Uuid;
 

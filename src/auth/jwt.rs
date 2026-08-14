@@ -117,8 +117,14 @@ impl JwtService {
                 DecodingKey::from_rsa_pem(&pub_pem)
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("parse public key: {e}")))?
             } else {
-                DecodingKey::from_rsa_components(&[], &[], &pem)
-                    .map_err(|e| AppError::Internal(anyhow::anyhow!("derive public key: {e}")))?
+                // No public key path provided: derive public key from the private PEM.
+                let rsa = openssl_rsa_from_pkcs1_pem(&pem)
+                    .map_err(|e| AppError::Internal(anyhow::anyhow!("parse rsa: {e}")))?;
+                let pub_pem = rsa
+                    .public_key_to_pem()
+                    .map_err(|e| AppError::Internal(anyhow::anyhow!("pub pem: {e}")))?;
+                DecodingKey::from_rsa_pem(&pub_pem)
+                    .map_err(|e| AppError::Internal(anyhow::anyhow!("parse derived public key: {e}")))?
             };
             (enc, dec)
         } else if let Some(secret) = settings.jwt_secret.as_deref() {
@@ -177,8 +183,20 @@ impl JwtService {
             access_token: access,
             refresh_token: refresh,
             token_type: "Bearer".to_string(),
-            expires_in: self.settings.access_ttl_secs as i64,
+            expires_in: self.settings.access_token_ttl_secs as i64,
         })
+    }
+
+    /// Returns the access-token TTL as a `chrono::TimeDelta`.
+    pub fn access_ttl(&self) -> chrono::TimeDelta {
+        chrono::TimeDelta::from_std(self.settings.access_ttl())
+            .unwrap_or(chrono::TimeDelta::zero())
+    }
+
+    /// Returns the refresh-token TTL as a `chrono::TimeDelta`.
+    pub fn refresh_ttl(&self) -> chrono::TimeDelta {
+        chrono::TimeDelta::from_std(self.settings.refresh_ttl())
+            .unwrap_or(chrono::TimeDelta::zero())
     }
 
     pub fn verify(&self, token: &str, expected_kind: &str) -> Result<Claims, AppError> {

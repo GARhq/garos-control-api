@@ -6,6 +6,7 @@ use crate::db::models::user::{ActiveSessionRow, UserRow};
 use crate::db::repositories::users::UserRepo;
 use crate::domain::user::*;
 use crate::error::AppError;
+use validator::Validate;
 use chrono::Utc;
 use std::sync::Arc;
 use uuid::Uuid;

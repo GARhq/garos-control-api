@@ -3,7 +3,7 @@
 use crate::db::repositories::services::ServiceHealthRepo;
 use crate::domain::service::{LogLine, ServiceHealth, ServiceView};
 use crate::error::AppError;
-use crate::integrations::systemd::SystemdIntegration;
+use crate::integrations::systemd::{Systemd, SystemdIntegration};
 use std::sync::Arc;
 
 pub struct ServiceManager {

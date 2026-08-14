@@ -4,6 +4,7 @@ use crate::auth::extractor::CurrentUser;
 use crate::domain::node::*;
 use crate::error::AppError;
 use crate::state::AppState;
+use validator::Validate;
 use axum::extract::{Path, Query, State};
 use axum::Json;
 use serde::Deserialize;
@@ -262,7 +263,7 @@ pub async fn node_stats(
 }
 
 pub fn node_to_view(row: crate::db::models::node::NodeRow) -> NetbootDevice {
-    let id = Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil);
+    let id = Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil());
     NetbootDevice {
         id,
         mac: row.mac,

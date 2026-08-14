@@ -5,9 +5,10 @@ use crate::db::repositories::audit::AuditRepo;
 use crate::db::repositories::firewall::FirewallRepo;
 use crate::domain::firewall::*;
 use crate::error::AppError;
-use crate::integrations::nftables::NftablesIntegration;
+use crate::integrations::nftables::{Nftables, NftablesIntegration};
 use crate::realtime::events::Event;
 use crate::realtime::hub::RealtimeHub;
+use validator::Validate;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -108,7 +109,7 @@ impl FirewallService {
             )
             .await?;
         self.hub.publish(Event::FirewallRuleChanged {
-            id: row.id().unwrap_or_else(Uuid::nil),
+            id: row.id().unwrap_or(Uuid::nil()),
             action: "created".into(),
             at: chrono::Utc::now(),
         });
@@ -163,7 +164,7 @@ impl FirewallService {
             )
             .await?;
         self.hub.publish(Event::FirewallRuleChanged {
-            id: row.id().unwrap_or_else(Uuid::nil),
+            id: row.id().unwrap_or(Uuid::nil()),
             action: "updated".into(),
             at: chrono::Utc::now(),
         });
@@ -279,7 +280,7 @@ impl FirewallService {
 
 pub fn view_from_row(row: FirewallRuleRow) -> FirewallRuleView {
     FirewallRuleView {
-        id: Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil),
+        id: Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil()),
         action: row.action,
         family: row.family,
         table_name: row.table_name,

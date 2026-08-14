@@ -37,7 +37,7 @@ pub async fn feed(
     let feed: Vec<ActivityEvent> = rows
         .into_iter()
         .map(|e| ActivityEvent {
-            id: Uuid::parse_str(&e.id.to_string()).unwrap_or_else(|_| Uuid::nil),
+            id: Uuid::parse_str(&e.id.to_string()).unwrap_or_else(|_| Uuid::nil()),
             kind: e.action.clone(),
             title: e.action.clone(),
             description: e.error_message,

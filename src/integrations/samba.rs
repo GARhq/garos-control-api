@@ -199,7 +199,7 @@ impl SambaIntegration {
         };
         let settings = LdapConnSettings::new().set_conn_timeout(Duration::from_secs(5));
         for attempt in 1u32..=3 {
-            match LdapConnAsync::new_with_settings(settings, &url).await {
+            match LdapConnAsync::with_settings(settings, &url).await {
                 Ok((conn, ldap)) => {
                     let _ = conn.drive();
                     match ldap
@@ -242,7 +242,7 @@ impl Samba for SambaIntegration {
             self.ensure_seeded();
             return Ok(self.mock_data.lock().users.clone());
         }
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         let (rs, _res) = ldap
             .search(
                 &self.settings.ldap_base_dn,
@@ -331,7 +331,7 @@ impl Samba for SambaIntegration {
             g.users.push(u.clone());
             return Ok(u);
         }
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         let dn = format!("CN={username},CN=Users,{}", self.settings.ldap_base_dn);
         let pw = format!("\"{password}\"");
         let attrs = vec![
@@ -392,7 +392,7 @@ impl Samba for SambaIntegration {
         }
         let new_uac = if disabled { 514u32 } else { 512u32 };
         mods.push(("userAccountControl".into(), vec![new_uac.to_string()]));
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         ldap.modify(&u.dn, mods).await?.success()?;
         self.get_user(username).await
     }
@@ -408,7 +408,7 @@ impl Samba for SambaIntegration {
             .get_user(username)
             .await?
             .ok_or_else(|| AppError::NotFound(format!("user {username}")))?;
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         ldap.delete(&u.dn).await?.success()?;
         Ok(())
     }
@@ -418,7 +418,7 @@ impl Samba for SambaIntegration {
             self.ensure_seeded();
             return Ok(self.mock_data.lock().groups.clone());
         }
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         let (rs, _) = ldap
             .search(
                 &self.settings.ldap_base_dn,
@@ -459,7 +459,7 @@ impl Samba for SambaIntegration {
             .into_iter()
             .find(|g| g.name == group)
             .ok_or_else(|| AppError::NotFound(format!("group {group}")))?;
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         ldap.modify_add(&gr.dn, vec![("member".to_string(), vec![member_dn.to_string()])])
             .await?
             .success()?;
@@ -471,7 +471,7 @@ impl Samba for SambaIntegration {
             self.ensure_seeded();
             return Ok(self.mock_data.lock().ous.clone());
         }
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         let (rs, _) = ldap
             .search(
                 &self.settings.ldap_base_dn,
@@ -499,7 +499,7 @@ impl Samba for SambaIntegration {
             self.ensure_seeded();
             return Ok(self.mock_data.lock().gpos.clone());
         }
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         let (rs, _) = ldap
             .search(
                 &format!("CN=Policies,CN=System,{}", self.settings.ldap_base_dn),
@@ -557,7 +557,7 @@ impl Samba for SambaIntegration {
                 v
             });
         }
-        let ldap = self.connect().await?;
+        let mut ldap = self.connect().await?;
         let base = format!(
             "DC={},DC={}",
             zone.split('.').next().unwrap_or("dns"),

@@ -5,7 +5,8 @@ use crate::db::repositories::audit::AuditRepo;
 use crate::db::repositories::storage::StorageRepo;
 use crate::domain::storage::*;
 use crate::error::AppError;
-use crate::integrations::btrfs::BtrfsIntegration;
+use crate::integrations::btrfs::{Btrfs, BtrfsIntegration};
+use validator::Validate;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -214,7 +215,7 @@ impl StorageService {
 
 pub fn snap_from_row(row: StorageSnapshotRow) -> Snapshot {
     Snapshot {
-        id: Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil),
+        id: Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil()),
         pool: row.pool,
         subvolume: row.subvolume,
         name: row.name,
@@ -227,7 +228,7 @@ pub fn snap_from_row(row: StorageSnapshotRow) -> Snapshot {
 
 pub fn export_from_row(row: NfsExportRow) -> NfsExport {
     NfsExport {
-        id: Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil),
+        id: Uuid::parse_str(&row.id).unwrap_or_else(|_| Uuid::nil()),
         path: row.path,
         allowed_clients: row.allowed_clients,
         options: row.options,

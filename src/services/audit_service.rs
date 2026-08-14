@@ -4,6 +4,7 @@ use crate::db::models::audit_log::AuditLogRow;
 use crate::db::repositories::audit::AuditRepo;
 use crate::domain::audit::*;
 use crate::error::AppError;
+use validator::Validate;
 use chrono::{DateTime, Utc};
 use std::io::Write;
 
@@ -95,7 +96,7 @@ impl AuditService {
 
 pub fn entry_from_row(row: AuditLogRow) -> AuditEntry {
     AuditEntry {
-        id: uuid::Uuid::parse_str(&row.id).unwrap_or_else(|_| uuid::Uuid::nil),
+        id: uuid::Uuid::parse_str(&row.id).unwrap_or_else(|_| uuid::Uuid::nil()),
         actor_id: row
             .actor_id
             .as_deref()
