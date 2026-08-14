@@ -6,7 +6,14 @@ body_size_limit = 2097152
 graceful_shutdown_secs = 15
 
 [database]
-url = "sqlite::memory:"
+# SECURITY (AURA-20260813-014): NEVER use sqlite::memory: in non-test
+# environments — every process restart wipes the database. The default
+# below points to a persistent file at /var/lib/garos/garos.db so a
+# deploy without override survives restarts. To use a different path
+# in development, set DATABASE__URL=sqlite:///your/path.db. The Rust
+# loader also fail-fasts at startup if in-memory slips through (with
+# an explicit GAROS_ALLOW_IN_MEMORY=1 override for tests).
+url = "sqlite:///var/lib/garos/garos.db?mode=rwc"
 max_connections = 16
 min_connections = 2
 acquire_timeout_secs = 5

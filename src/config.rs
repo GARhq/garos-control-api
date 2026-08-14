@@ -56,6 +56,12 @@ impl ServerSettings {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DatabaseSettings {
+    /// Database URL. Default points to a persistent file under
+    /// `/var/lib/garos/garos.db` so a deploy without override survives
+    /// restarts. Override via env `DATABASE__URL=sqlite://...`.
+    /// SECURITY (AURA-20260813-014): must never resolve to `sqlite::memory:`
+    /// in non-test paths — see [`DatabaseSettings::reject_in_memory`].
+    #[serde(default = "default_database_url")]
     pub url: String,
     #[serde(default = "default_max_connections")]
     pub max_connections: u32,
@@ -70,6 +76,32 @@ pub struct DatabaseSettings {
 impl DatabaseSettings {
     pub fn acquire_timeout(&self) -> Duration {
         Duration::from_secs(self.acquire_timeout_secs)
+    }
+
+    /// Fail-fast guard for catastrophic defaults. `sqlite::memory:` wipes
+    /// the entire database on every process restart with no warning.
+    /// Tests opt in to the in-memory behavior explicitly via
+    /// `GAROS_ALLOW_IN_MEMORY=1` in their setup.
+    /// Reference: 02-Contrato/api/AURA-20260813-014 (P0).
+    pub fn reject_in_memory(&self) -> Result<(), String> {
+        self.reject_in_memory_with(std::env::var("GAROS_ALLOW_IN_MEMORY").ok().as_deref())
+    }
+
+    /// Pure check (no env access) — same logic, takes the env value as
+    /// a parameter. Useful in tests where global env mutation is undesirable.
+    pub fn reject_in_memory_with(&self, allow_in_memory: Option<&str>) -> Result<(), String> {
+        if self.url.trim() == "sqlite::memory:" {
+            if allow_in_memory.is_some() {
+                return Ok(());
+            }
+            return Err(format!(
+                "database.url resolves to 'sqlite::memory:' which wipes all data on \
+                 every restart. Set DATABASE__URL=sqlite:///var/lib/garos/garos.db \
+                 (or any persistent file) before booting. To run with in-memory \
+                 explicitly, set GAROS_ALLOW_IN_MEMORY=1."
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -422,7 +454,14 @@ impl Settings {
                     .list_separator(","),
             );
 
-        builder.build()?.try_deserialize()
+        let s: Settings = builder.build()?.try_deserialize()?;
+
+        // SECURITY (AURA-20260813-014): fail-fast if in-memory DB slips through.
+        s.database.reject_in_memory().map_err(|e| {
+            config::ConfigError::Message(format!("[AURA-20260813-014] {}", e))
+        })?;
+
+        Ok(s)
     }
 }
 
@@ -450,6 +489,11 @@ fn default_max_connections() -> u32 {
 }
 fn default_min_connections() -> u32 {
     2
+}
+fn default_database_url() -> String {
+    // SECURITY (AURA-20260813-014): default points to a persistent file,
+    // never to in-memory. Operator can override via DATABASE__URL.
+    "sqlite:///var/lib/garos/garos.db?mode=rwc".to_string()
 }
 fn default_acquire_timeout_secs() -> u64 {
     5
@@ -539,6 +583,60 @@ mod tests {
         assert_eq!(s.server.port, 8080);
         assert_eq!(s.server.workers, default_workers());
         assert!(s.features.mock_integrations);
+    }
+
+    #[test]
+    fn reject_in_memory_blocks_in_memory_url() {
+        // Use the pure check to avoid touching the global env.
+        let dbs = DatabaseSettings {
+            url: "sqlite::memory:".to_string(),
+            ..toml::from_str::<Settings>(
+                r#"[server]
+                   bind_addr = "0.0.0.0"
+                   port = 8080
+                   [auth]
+                "#,
+            )
+            .unwrap()
+            .database
+        };
+        let result = dbs.reject_in_memory_with(None);
+        assert!(result.is_err(), "expected reject_in_memory to fail without GAROS_ALLOW_IN_MEMORY");
+        assert!(result.unwrap_err().contains("AURA-20260813-014"));
+    }
+
+    #[test]
+    fn reject_in_memory_allows_with_opt_in() {
+        let dbs = DatabaseSettings {
+            url: "sqlite::memory:".to_string(),
+            ..toml::from_str::<Settings>(
+                r#"[server]
+                   bind_addr = "0.0.0.0"
+                   port = 8080
+                   [auth]
+                "#,
+            )
+            .unwrap()
+            .database
+        };
+        assert!(dbs.reject_in_memory_with(Some("1")).is_ok());
+    }
+
+    #[test]
+    fn reject_in_memory_allows_persistent_url() {
+        let dbs = DatabaseSettings {
+            url: "sqlite:///var/lib/garos/garos.db?mode=rwc".to_string(),
+            ..toml::from_str::<Settings>(
+                r#"[server]
+                   bind_addr = "0.0.0.0"
+                   port = 8080
+                   [auth]
+                "#,
+            )
+            .unwrap()
+            .database
+        };
+        assert!(dbs.reject_in_memory().is_ok());
     }
 
     #[test]
