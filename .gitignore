@@ -1,0 +1,18 @@
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+
+# Nix
+result
+result-*
+*.drv
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# OS
+*.log
