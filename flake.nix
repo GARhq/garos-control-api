@@ -2,24 +2,15 @@
   description = "garos-backend — production HTTP API for kryonix-os-control-center";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # K-008 (2026-08-14): migração NixOS 25.11 → 26.05.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     flake-utils.url = "github:numtide/flake-utils";
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, ... }:
+  outputs = { self, nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ (import rust-overlay) ];
-        };
-        rustToolchain = pkgs.rust-bin.stable.latest.default.override {
-          extensions = [ "rustfmt" "clippy" "rust-src" ];
-        };
+        pkgs = nixpkgs.legacyPackages.${system};
         buildDeps = with pkgs; [
           pkg-config
           openssl
@@ -30,7 +21,7 @@
           pname = "garos-backend";
           version = "0.1.0";
           src = ./.;
-          cargoLock = ./Cargo.lock;
+          cargoLock = { lockFile = ./Cargo.lock; };
           nativeBuildInputs = with pkgs; [ pkg-config ];
           buildInputs = buildDeps;
           doCheck = true;
@@ -44,7 +35,8 @@
         devShells.default = pkgs.mkShell {
           inputsFrom = [ self.packages.${system}.default ];
           buildInputs = with pkgs; [
-            rustToolchain
+            rustc
+            cargo
             pkg-config
             openssl
             sqlite
@@ -61,7 +53,8 @@
 
         devShells.ci = pkgs.mkShell {
           buildInputs = with pkgs; [
-            rustToolchain
+            rustc
+            cargo
             cargo-audit
             cargo-deny
             cargo-tarpaulin
