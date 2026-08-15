@@ -197,10 +197,10 @@ impl SambaIntegration {
         } else {
             format!("ldap://{}:{}", self.settings.dc_host, self.settings.ldap_port)
         };
-        let settings = LdapConnSettings::new().set_conn_timeout(Duration::from_secs(5));
+        let settings = || LdapConnSettings::new().set_conn_timeout(Duration::from_secs(5));
         for attempt in 1u32..=3 {
-            match LdapConnAsync::with_settings(settings, &url).await {
-                Ok((conn, ldap)) => {
+            match LdapConnAsync::with_settings(settings(), &url).await {
+                Ok((conn, mut ldap)) => {
                     let _ = conn.drive();
                     match ldap
                         .simple_bind(&self.settings.ldap_bind_dn, &password)
@@ -334,11 +334,11 @@ impl Samba for SambaIntegration {
         let mut ldap = self.connect().await?;
         let dn = format!("CN={username},CN=Users,{}", self.settings.ldap_base_dn);
         let pw = format!("\"{password}\"");
-        let attrs = vec![
-            ("objectClass", vec!["top", "person", "organizationalPerson", "user"]),
-            ("sAMAccountName", vec![username]),
-            ("userAccountControl", vec!["512"]),
-            ("unicodePwd", vec![&pw]),
+        let attrs: Vec<(&str, std::collections::HashSet<&str>)> = vec![
+            ("objectClass", ["top", "person", "organizationalPerson", "user"].into_iter().collect()),
+            ("sAMAccountName", [username].into_iter().collect()),
+            ("userAccountControl", ["512"].into_iter().collect()),
+            ("unicodePwd", [pw.as_str()].into_iter().collect()),
         ];
         ldap.add(&dn, attrs).await?.success()?;
         Ok(SambaUser {
@@ -383,18 +383,20 @@ impl Samba for SambaIntegration {
             .get_user(username)
             .await?
             .ok_or_else(|| AppError::NotFound(format!("user {username}")))?;
-        let mut mods: Vec<(String, Vec<String>)> = Vec::new();
+        let mut mods: Vec<ldap3::Mod<String>> = Vec::new();
         if let Some(d) = display_name {
-            mods.push(("displayName".into(), vec![d.into()]));
+            mods.push(ldap3::Mod::Replace("displayName".to_string(), std::collections::HashSet::from([d.to_string()])));
         }
         if let Some(e) = email {
-            mods.push(("mail".into(), vec![e.into()]));
+            mods.push(ldap3::Mod::Replace("mail".to_string(), std::collections::HashSet::from([e.to_string()])));
         }
         let new_uac = if disabled { 514u32 } else { 512u32 };
-        mods.push(("userAccountControl".into(), vec![new_uac.to_string()]));
+        mods.push(ldap3::Mod::Replace("userAccountControl".to_string(), std::collections::HashSet::from([new_uac.to_string()])));
         let mut ldap = self.connect().await?;
         ldap.modify(&u.dn, mods).await?.success()?;
-        self.get_user(username).await
+        self.get_user(username).await?.ok_or_else(|| {
+            AppError::NotFound(format!("user {username} after modify"))
+        })
     }
 
     async fn delete_user(&self, username: &str) -> Result<(), AppError> {
@@ -460,9 +462,13 @@ impl Samba for SambaIntegration {
             .find(|g| g.name == group)
             .ok_or_else(|| AppError::NotFound(format!("group {group}")))?;
         let mut ldap = self.connect().await?;
-        ldap.modify_add(&gr.dn, vec![("member".to_string(), vec![member_dn.to_string()])])
-            .await?
-            .success()?;
+        let mods: Vec<ldap3::Mod<String>> = vec![
+            ldap3::Mod::Add(
+                "member".to_string(),
+                std::collections::HashSet::from([member_dn.to_string()]),
+            ),
+        ];
+        ldap.modify(&gr.dn, mods).await?.success()?;
         Ok(())
     }
 
@@ -581,8 +587,8 @@ impl Samba for SambaIntegration {
             if let Some(r) = e.attrs.get("dnsRecord").and_then(|v| v.first()) {
                 recs.push(DnsRecord {
                     name,
-                    record_type: parse_dns_type(r).0,
-                    value: parse_dns_type(r).1,
+                    record_type: parse_dns_type(r.as_bytes()).0,
+                    value: parse_dns_type(r.as_bytes()).1,
                     ttl: 3600,
                 });
             }
