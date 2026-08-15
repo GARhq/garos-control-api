@@ -57,24 +57,26 @@ pub async fn require_auth(
     Ok(next.run(req).await)
 }
 
-/// Middleware factory: require a minimum [`Role`].
-pub fn require_role(min: Role) -> impl Clone + Send + Sync + 'static {
-    let min = min;
-    move |State(state): State<AppState>, req: Request, next: Next| {
-        let min = min;
-        async move {
-            let token = extract_token(&req)?;
-            let claims = state.jwt.verify(&token, "access")?;
-            let user = CurrentUser::from_claims(&claims)?;
-            let role = user.role;
-            if role < min {
-                return Err(AppError::Forbidden);
-            }
-            let mut req = req;
-            req.extensions_mut().insert(user);
-            Ok::<_, AppError>(next.run(req).await)
-        }
+/// Middleware: require the JWT to carry the `Admin` role.
+///
+/// Applied to admin-only routes (user provisioning, firewall policy,
+/// panic-mode, storage writes — see Wave 6 critical #1).
+/// Because it is an `async fn` with the proper signature, it can be
+/// consumed by `axum::middleware::from_fn_with_state(state, require_role)`.
+pub async fn require_role(
+    State(state): State<AppState>,
+    req: Request,
+    next: Next,
+) -> Result<Response, AppError> {
+    let token = extract_token(&req)?;
+    let claims = state.jwt.verify(&token, "access")?;
+    let user = CurrentUser::from_claims(&claims)?;
+    if user.role < Role::Admin {
+        return Err(AppError::Forbidden);
     }
+    let mut req = req;
+    req.extensions_mut().insert(user);
+    Ok(next.run(req).await)
 }
 
 #[cfg(test)]
