@@ -82,6 +82,28 @@ pub async fn require_role(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::auth::jwt::Role;
+
+    /// Sanity: the role ordering used by `require_role` (Operator < Admin)
+    /// must hold. The `require_role` middleware rejects any caller whose
+    /// role is below `Role::Admin`, so we depend on this Ord contract.
+    #[test]
+    fn operator_ranks_below_admin() {
+        assert!(Role::Operator < Role::Admin);
+    }
+
+    /// Regression for Wave 6 critical #1: a plain user must also be rejected
+    /// when hitting an admin-only route (was the privilege-escalation vector).
+    #[test]
+    fn user_ranks_below_admin() {
+        assert!(Role::User < Role::Admin);
+    }
+
+    /// Admin equals Admin (boundary of the >= comparison in require_role).
+    #[test]
+    fn admin_is_ge_admin() {
+        assert!(Role::Admin >= Role::Admin);
+    }
 
     #[test]
     fn parse_bearer() {
