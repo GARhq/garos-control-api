@@ -71,8 +71,8 @@ mod tests {
 
     #[tokio::test]
     async fn current_trace_id_is_set() {
-        async fn handler() -> Uuid {
-            current_trace_id().unwrap_or_else(Uuid::nil)
+        async fn handler() -> String {
+            current_trace_id().unwrap_or_else(Uuid::nil).to_string()
         }
         let app = axum::Router::new()
             .route("/", axum::routing::get(handler))

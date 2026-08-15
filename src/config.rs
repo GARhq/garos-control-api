@@ -10,7 +10,9 @@ use std::time::Duration;
 #[serde(deny_unknown_fields)]
 pub struct Settings {
     pub server: ServerSettings,
+    #[serde(default)]
     pub database: DatabaseSettings,
+    #[serde(default)]
     pub auth: AuthSettings,
     #[serde(default)]
     pub integrations: IntegrationsSettings,
@@ -73,6 +75,18 @@ pub struct DatabaseSettings {
     pub run_migrations: bool,
 }
 
+impl Default for DatabaseSettings {
+    fn default() -> Self {
+        Self {
+            url: default_database_url(),
+            max_connections: default_max_connections(),
+            min_connections: default_min_connections(),
+            acquire_timeout_secs: default_acquire_timeout_secs(),
+            run_migrations: default_run_migrations(),
+        }
+    }
+}
+
 impl DatabaseSettings {
     pub fn acquire_timeout(&self) -> Duration {
         Duration::from_secs(self.acquire_timeout_secs)
@@ -98,7 +112,7 @@ impl DatabaseSettings {
                 "database.url resolves to 'sqlite::memory:' which wipes all data on \
                  every restart. Set DATABASE__URL=sqlite:///var/lib/garos/garos.db \
                  (or any persistent file) before booting. To run with in-memory \
-                 explicitly, set GAROS_ALLOW_IN_MEMORY=1."
+                 explicitly, set GAROS_ALLOW_IN_MEMORY=1. (AURA-20260813-014)"
             ));
         }
         Ok(())
@@ -111,7 +125,9 @@ pub struct AuthSettings {
     pub jwt_secret: Option<String>,
     pub jwt_private_key_path: Option<PathBuf>,
     pub jwt_public_key_path: Option<PathBuf>,
+    #[serde(default = "default_jwt_issuer")]
     pub jwt_issuer: String,
+    #[serde(default = "default_jwt_audience")]
     pub jwt_audience: String,
     #[serde(default = "default_access_ttl")]
     pub access_token_ttl_secs: u64,
@@ -121,6 +137,22 @@ pub struct AuthSettings {
     pub argon2_cost: u32,
     #[serde(default = "default_idempotency_ttl")]
     pub idempotency_ttl_secs: u64,
+}
+
+impl Default for AuthSettings {
+    fn default() -> Self {
+        Self {
+            jwt_secret: None,
+            jwt_private_key_path: None,
+            jwt_public_key_path: None,
+            jwt_issuer: default_jwt_issuer(),
+            jwt_audience: default_jwt_audience(),
+            access_token_ttl_secs: default_access_ttl(),
+            refresh_token_ttl_secs: default_refresh_ttl(),
+            argon2_cost: default_argon2_cost(),
+            idempotency_ttl_secs: default_idempotency_ttl(),
+        }
+    }
 }
 
 impl AuthSettings {
@@ -500,6 +532,12 @@ fn default_acquire_timeout_secs() -> u64 {
 }
 fn default_run_migrations() -> bool {
     true
+}
+fn default_jwt_issuer() -> String {
+    "garos-control-api".to_string()
+}
+fn default_jwt_audience() -> String {
+    "garos-control-center".to_string()
 }
 fn default_access_ttl() -> u64 {
     900 // 15 min

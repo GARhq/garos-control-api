@@ -12,15 +12,14 @@ use garos_backend::db::repositories::nodes::NodeRepo;
 use garos_backend::db::repositories::services::ServiceHealthRepo;
 use garos_backend::db::repositories::storage::StorageRepo;
 use garos_backend::db::repositories::users::UserRepo;
-use garos_backend::error::AppError;
-use garos_backend::integrations::btrfs::BtrfsIntegration;
+use garos_backend::integrations::btrfs::{Btrfs, BtrfsIntegration};
 use garos_backend::integrations::journald::JournaldIntegration;
-use garos_backend::integrations::nftables::NftablesIntegration;
-use garos_backend::integrations::nix::NixIntegration;
-use garos_backend::integrations::pxe::PxeIntegration;
-use garos_backend::integrations::samba::SambaIntegration;
+use garos_backend::integrations::nftables::{Nftables, NftablesIntegration};
+use garos_backend::integrations::nix::{Nix, NixIntegration};
+use garos_backend::integrations::pxe::{Pxe, PxeIntegration};
+use garos_backend::integrations::samba::{Samba, SambaIntegration};
 use garos_backend::integrations::systemd::SystemdIntegration;
-use garos_backend::integrations::wol::WolIntegration;
+use garos_backend::integrations::wol::{Wol, WolIntegration};
 use garos_backend::realtime::hub::RealtimeHub;
 use garos_backend::services::audit_service::AuditService;
 use garos_backend::services::firewall_service::FirewallService;
@@ -33,7 +32,7 @@ use garos_backend::state::AppState;
 use garos_backend::telemetry;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tracing::{error, info};
+use tracing::info;
 
 #[derive(Parser, Debug)]
 #[command(name = "garos-backend", version, about = "garos management API server")]
