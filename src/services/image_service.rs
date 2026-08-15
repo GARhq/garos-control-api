@@ -158,7 +158,7 @@ impl ImageService {
             .ok_or(AppError::NotFound("image".into()))?;
         self.repo.update_status(id, "building").await?;
         self.hub.publish(Event::ImageBuildProgress {
-            image_id: img.id().unwrap_or_else(Uuid::nil),
+            image_id: img.id_uuid(),
             status: "building".into(),
             progress_pct: 0.0,
             at: chrono::Utc::now(),
@@ -167,7 +167,7 @@ impl ImageService {
         let _ = self.nix.nix_build(&format!(".#{}", img.name)).await?;
         self.repo.update_status(id, "ready").await?;
         Ok(ImageBuildStatus {
-            image_id: img.id().unwrap_or_else(Uuid::nil),
+            image_id: img.id_uuid(),
             status: "ready".into(),
             progress_pct: 100.0,
             current_step: Some("completed".into()),
@@ -184,7 +184,7 @@ impl ImageService {
             .await?
             .ok_or(AppError::NotFound("image".into()))?;
         Ok(ImageBuildStatus {
-            image_id: img.id().unwrap_or_else(Uuid::nil),
+            image_id: img.id_uuid(),
             status: img.status.clone(),
             progress_pct: if img.status == "ready" { 100.0 } else { 50.0 },
             current_step: Some(img.status.clone()),
@@ -252,7 +252,7 @@ impl ImageService {
             .await?
             .ok_or(AppError::NotFound("image".into()))?;
         Ok(ImageDiff {
-            image_id: img.id().unwrap_or_else(Uuid::nil),
+            image_id: img.id_uuid(),
             version_a: a.into(),
             version_b: b.into(),
             packages_added: vec!["curl".into(), "jq".into()],
@@ -268,7 +268,7 @@ impl ImageService {
 }
 
 impl ImageRow {
-    pub fn id(&self) -> Option<Uuid> {
-        Uuid::parse_str(&self.id).ok()
+    pub fn id_uuid(&self) -> Uuid {
+        Uuid::parse_str(&self.id).unwrap_or_else(|_| Uuid::nil())
     }
 }

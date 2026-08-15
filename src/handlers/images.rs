@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 fn image_view(row: ImageRow) -> ImageView {
     ImageView {
-        id: row.id(),
+        id: row.id_uuid(),
         name: row.name,
         description: row.description,
         nixos_version: row.nixos_version,
@@ -24,12 +24,6 @@ fn image_view(row: ImageRow) -> ImageView {
         published_at: row.published_at,
         created_at: row.created_at,
         updated_at: row.updated_at,
-    }
-}
-
-impl ImageRow {
-    pub fn id(&self) -> Uuid {
-        Uuid::parse_str(&self.id).unwrap_or_else(|_| Uuid::nil())
     }
 }
 
