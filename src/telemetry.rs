@@ -3,10 +3,11 @@
 use crate::config::{LogFormat, Settings};
 use opentelemetry::trace::TracerProvider as _;
 use opentelemetry::KeyValue;
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::trace::TracerProvider;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{EnvFilter, Layer as _};
 
 /// Guard returned by [`init`] — flushing telemetry on drop.
 pub struct TelemetryGuard {
@@ -15,7 +16,7 @@ pub struct TelemetryGuard {
 
 impl Drop for TelemetryGuard {
     fn drop(&mut self) {
-        if let Some(mut p) = self.provider.take() {
+        if let Some(p) = self.provider.take() {
             // Best-effort shutdown.
             if let Err(e) = p.shutdown() {
                 eprintln!("OTel provider shutdown error: {e}");
@@ -40,7 +41,6 @@ pub fn init(settings: &Settings) -> anyhow::Result<TelemetryGuard> {
             .with_target(true)
             .with_thread_ids(false)
             .with_level(true)
-            .with_current_span(true)
             .with_span_list(false)
             .json()
             .boxed(),

@@ -83,11 +83,11 @@ utoipa-swagger-ui = { version = "6", features = ["axum"] }
 # Tracing / OTel
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "registry", "fmt"] }
-tracing-opentelemetry = "0.23"
-opentelemetry = { version = "0.22" }
-opentelemetry_sdk = { version = "0.22", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.15", default-features = false, features = ["grpc-tonic", "trace"] }
-opentelemetry-semantic-conventions = "0.13"
+tracing-opentelemetry = "0.28"
+opentelemetry = { version = "0.27" }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.27", default-features = false, features = ["grpc-tonic", "trace"] }
+opentelemetry-semantic-conventions = "0.27"
 
 # Auth
 jsonwebtoken = "9"
