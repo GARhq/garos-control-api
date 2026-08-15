@@ -35,6 +35,8 @@ impl AuditRepo {
         let now = chrono::Utc::now();
         let before_json = before.map(|v| serde_json::to_string(v).unwrap_or_default());
         let after_json = after.map(|v| serde_json::to_string(v).unwrap_or_default());
+        let before_json_for_struct = before_json.clone();
+        let after_json_for_struct = after_json.clone();
         sqlx::query(
             "INSERT INTO audit_log
                (id, actor_id, actor_username, action, target_type, target_id, before_json, after_json,
@@ -64,8 +66,8 @@ impl AuditRepo {
             action: action.to_string(),
             target_type: target_type.map(str::to_string),
             target_id: target_id.map(str::to_string),
-            before_json,
-            after_json,
+            before_json: before_json_for_struct,
+            after_json: after_json_for_struct,
             ip: ip.map(str::to_string),
             user_agent: user_agent.map(str::to_string),
             trace_id: trace_id.map(str::to_string),
