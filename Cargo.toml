@@ -165,6 +165,7 @@ tempfile = "3"
 mockall = "0.12"
 mockito = "1"
 pretty_assertions = "1"
+toml = "0.8"
 
 [profile.release]
 opt-level = 3
