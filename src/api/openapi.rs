@@ -7,7 +7,7 @@ use utoipa::OpenApi;
 #[openapi(
     info(
         title = "garos-backend",
-        version = env!("CARGO_PKG_VERSION"),
+        version = "0.1.0",
         description = "Production HTTP API for the kryonix-os-control-center to manage diskless garos endpoints on NixOS.",
         contact(name = "Kryonix", url = "https://kryonix.local"),
         license(name = "MIT/Apache-2.0"),
