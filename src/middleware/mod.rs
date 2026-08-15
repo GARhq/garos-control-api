@@ -1,6 +1,5 @@
 //! Cross-cutting HTTP middleware.
 
-pub mod auth;
 pub mod cors;
 pub mod idempotency;
 pub mod logging;
