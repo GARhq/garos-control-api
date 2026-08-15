@@ -56,12 +56,10 @@ pub async fn middleware(
     let lim = reg.limiter(addr.ip());
     match lim.check() {
         Ok(_) => Ok(next.run(req).await),
-        Err(_) => {
-            let wait = lim
-                .check()
-                .wait_time_from(governor::clock::Clock::now(&DefaultClock::default()));
+        Err(not_until) => {
+            let wait = not_until.wait_time_from(governor::clock::Clock::now(&DefaultClock::default()));
             Err(crate::error::AppError::RateLimited {
-                retry_after_secs: wait.map_or(1, |d| d.as_secs().max(1)),
+                retry_after_secs: wait.as_secs().max(1),
             })
         }
     }
