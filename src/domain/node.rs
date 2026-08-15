@@ -27,7 +27,8 @@ pub struct NetbootDevice {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate, utoipa::ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(value_type = String)]
 pub struct MacAddress(pub String);
 
 impl std::fmt::Display for MacAddress {
