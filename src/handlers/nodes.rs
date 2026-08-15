@@ -224,6 +224,17 @@ pub async fn node_events(
 }
 
 /// `POST /api/garos/nodes/bulk/wol`
+#[utoipa::path(
+    post,
+    path = "/api/garos/nodes/bulk/wol",
+    tag = "nodes",
+    request_body = BulkMacRequest,
+    responses(
+        (status = 200, description = "Bulk WOL triggered", body = BulkActionResult),
+        (status = 400, description = "Invalid request", body = crate::error::ErrorBody),
+    ),
+    security(("bearer" = []))
+)]
 pub async fn bulk_wol(
     State(state): State<AppState>,
     _user: CurrentUser,
@@ -234,6 +245,17 @@ pub async fn bulk_wol(
 }
 
 /// `POST /api/garos/nodes/bulk/shutdown`
+#[utoipa::path(
+    post,
+    path = "/api/garos/nodes/bulk/shutdown",
+    tag = "nodes",
+    request_body = BulkMacRequest,
+    responses(
+        (status = 200, description = "Bulk shutdown triggered", body = BulkActionResult),
+        (status = 400, description = "Invalid request", body = crate::error::ErrorBody),
+    ),
+    security(("bearer" = []))
+)]
 pub async fn bulk_shutdown(
     State(state): State<AppState>,
     user: CurrentUser,
@@ -244,6 +266,17 @@ pub async fn bulk_shutdown(
 }
 
 /// `POST /api/garos/nodes/bulk/reimage`
+#[utoipa::path(
+    post,
+    path = "/api/garos/nodes/bulk/reimage",
+    tag = "nodes",
+    request_body = BulkReimageRequest,
+    responses(
+        (status = 200, description = "Bulk reimage triggered", body = BulkActionResult),
+        (status = 400, description = "Invalid request", body = crate::error::ErrorBody),
+    ),
+    security(("bearer" = []))
+)]
 pub async fn bulk_reimage(
     State(state): State<AppState>,
     user: CurrentUser,
@@ -254,6 +287,15 @@ pub async fn bulk_reimage(
 }
 
 /// `GET /api/garos/nodes/stats`
+#[utoipa::path(
+    get,
+    path = "/api/garos/nodes/stats",
+    tag = "nodes",
+    responses(
+        (status = 200, description = "Node stats", body = NodeStats),
+    ),
+    security(("bearer" = []))
+)]
 pub async fn node_stats(
     State(state): State<AppState>,
     _user: CurrentUser,
