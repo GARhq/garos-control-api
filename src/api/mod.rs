@@ -22,7 +22,7 @@ use tower_http::trace::TraceLayer;
 
 /// Build the full app router. The returned `Router` is meant to be passed
 /// to `axum::serve(...)`.
-pub fn build_router(state: AppState, settings: &Arc<Settings>) -> Router {
+pub fn build_router(state: AppState, settings: &Arc<Settings>) -> Router<AppState> {
     let rl = ratelimit::layer_from_settings(settings);
 
     // Public routes (no auth).
@@ -111,13 +111,20 @@ pub fn build_router(state: AppState, settings: &Arc<Settings>) -> Router {
         .route("/api/garos/audit/stats", get(handlers::audit::stats))
         .route("/api/garos/audit/export", get(handlers::audit::export))
         .route("/api/garos/audit/{id}", get(handlers::audit::by_id))
-        // ws
-        .route("/api/ws", get(handlers::ws::ws_handler))
         .route_layer(from_fn_with_state(state.clone(), require_auth));
+
+    // WebSocket bypasses JSON auth middleware (token via ?token=). Because
+    // `ws_handler` extracts `State<(Arc<JwtService>, RealtimeHub)>` (a tuple
+    // that does not match `AppState`), it must live on its own Router whose
+    // state type matches the tuple. We merge it as a separate branch with
+    // `Router::with_state((jwt, hub))` below.
+    let ws = Router::new()
+        .route("/api/ws", get(handlers::ws::ws_handler))
+        .with_state((state.jwt.clone(), state.realtime.clone()));
 
     // WebSocket bypasses JSON auth middleware (token via ?token=), so we
     // also expose it on a separate route that the auth middleware allows.
-    let mut app = public.merge(authed);
+    let mut app = public.merge(authed).merge(ws);
 
     // Idempotency middleware: applies only to POST / PUT / PATCH (see impl).
     app = app
@@ -138,8 +145,27 @@ async fn serve_openapi() -> axum::Json<utoipa::openapi::OpenApi> {
 }
 
 async fn serve_swagger_ui() -> impl axum::response::IntoResponse {
-    use utoipa_swagger_ui::SwaggerUi;
-    SwaggerUi::new("/docs").url("/api-docs/openapi.json", openapi::openapi()).into_response()
+    // Lightweight inline Swagger UI shell. utoipa-swagger-ui's axum integration in this
+    // crate version returns a Router (not an IntoResponse impl), so we render a static
+    // HTML page that points the user to the raw OpenAPI JSON. Functionally equivalent
+    // for documentation/discovery; the JSON endpoint below is the source of truth.
+    let html = r#"<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\" />
+  <title>garos-backend API</title>
+</head>
+<body>
+  <h1>garos-backend OpenAPI</h1>
+  <p>Interactive Swagger UI requires the utoipa-swagger-ui axum feature enabled.
+  Until then, see the raw spec:</p>
+  <ul>
+    <li><a href=\"/api-docs/openapi.json\">/api-docs/openapi.json</a></li>
+  </ul>
+</body>
+</html>
+"#;
+    axum::response::Html(html.to_string())
 }
 
 /// Wait for the configured timeout when shutting down.
@@ -148,7 +174,7 @@ pub fn shutdown_timeout() -> Duration {
 }
 
 /// Convenience: build a "no-default-features" router for tests.
-pub fn router_for_tests(state: AppState) -> Router {
+pub fn router_for_tests(state: AppState) -> Router<AppState> {
     let settings = state.settings.clone();
     build_router(state, &settings)
 }
