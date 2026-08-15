@@ -126,7 +126,7 @@ impl JwtService {
                 let rsa = rsa::RsaPrivateKey::from_pkcs8_pem(&pem)
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("parse rsa pkcs8: {e}")))?;
                 let pub_pem = rsa
-                    .public_key()
+                    .to_public_key()
                     .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("pub pem: {e}")))?;
                 DecodingKey::from_rsa_pem(pub_pem.as_bytes())

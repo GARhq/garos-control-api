@@ -131,13 +131,16 @@ impl Journald for JournaldIntegration {
     ) -> Result<tokio::sync::mpsc::Receiver<LogLine>, AppError> {
         let (tx, rx) = tokio::sync::mpsc::channel::<LogLine>(256);
         if self.mock {
+            // Clone the borrowed `unit` into an owned String so the spawned task
+            // doesn't escape the lifetime of the method argument.
+            let unit_owned: Option<String> = unit.map(str::to_owned);
             tokio::spawn(async move {
                 let mut i = 0u32;
                 loop {
                     let line = LogLine {
                         timestamp: chrono::Utc::now(),
                         priority: 6,
-                        unit: unit.unwrap_or("garos-backend").into(),
+                        unit: unit_owned.as_deref().unwrap_or("garos-backend").into(),
                         message: format!("[mock stream] {i}"),
                     };
                     if tx.send(line).await.is_err() {

@@ -189,18 +189,26 @@ impl Systemd for SystemdIntegration {
                 })
                 .collect());
         }
-        let mut args = vec!["-u", name, "-n", &lines.to_string(), "--no-pager", "-o", "short"];
+        let mut args: Vec<String> = vec![];
+        let n_lines = lines.to_string();
+        args.push("-u".to_string());
+        args.push(name.to_string());
+        args.push("-n".to_string());
+        args.push(n_lines);
+        args.push("--no-pager".to_string());
+        args.push("-o".to_string());
+        args.push("short".to_string());
         if let Some(s) = since {
-            args.push("-S");
-            args.push(s);
+            args.push("-S".to_string());
+            args.push(s.to_string());
         }
         if let Some(u) = until {
-            args.push("-U");
-            args.push(u);
+            args.push("-U".to_string());
+            args.push(u.to_string());
         }
         if let Some(p) = priority {
-            args.push("-p");
-            args.push(p);
+            args.push("-p".to_string());
+            args.push(p.to_string());
         }
         let child = Command::new("journalctl")
             .args(&args)

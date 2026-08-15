@@ -41,7 +41,6 @@ pub fn init(settings: &Settings) -> anyhow::Result<TelemetryGuard> {
             .with_target(true)
             .with_thread_ids(false)
             .with_level(true)
-            .with_span_list(false)
             .json()
             .boxed(),
         LogFormat::Pretty => tracing_subscriber::fmt::layer()
