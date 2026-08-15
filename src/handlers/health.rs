@@ -88,13 +88,14 @@ fn rustc_version_runtime() -> &'static str {
     // Compiled-in at build time via env in Cargo.toml build script.
     // We expose a static slice for the lifetime of the program.
     static V: std::sync::OnceLock<String> = std::sync::OnceLock::new();
-    V.get_or_init(|| {
+    let s = V.get_or_init(|| {
         std::env::vars()
             .find(|(k, _)| k == "RUSTC_VERSION")
             .map(|(_, v)| v)
             .unwrap_or_else(|| "unknown".into())
-    })
-    .leak()
+    });
+    // Safety: leak the `&String` to `&'static str`; the value lives for program lifetime.
+    Box::leak(s.clone().into_boxed_str())
 }
 
 #[allow(dead_code)]

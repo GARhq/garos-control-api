@@ -118,12 +118,18 @@ impl JwtService {
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("parse public key: {e}")))?
             } else {
                 // No public key path provided: derive public key from the private PEM.
-                let rsa = openssl_rsa_from_pkcs1_pem(&pem)
-                    .map_err(|e| AppError::Internal(anyhow::anyhow!("parse rsa: {e}")))?;
+                //
+                // We use the `rsa` crate's PKCS#8 decoder to read the private PEM and emit
+                // the matching public key, then feed both into jsonwebtoken. PKCS#8 is the
+                // standard PEM produced by `openssl genpkey -algorithm RSA`.
+                use rsa::pkcs8::{DecodePrivateKey, EncodePublicKey};
+                let rsa = rsa::RsaPrivateKey::from_pkcs8_pem(&pem)
+                    .map_err(|e| AppError::Internal(anyhow::anyhow!("parse rsa pkcs8: {e}")))?;
                 let pub_pem = rsa
-                    .public_key_to_pem()
+                    .public_key()
+                    .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("pub pem: {e}")))?;
-                DecodingKey::from_rsa_pem(&pub_pem)
+                DecodingKey::from_rsa_pem(pub_pem.as_bytes())
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("parse derived public key: {e}")))?
             };
             (enc, dec)

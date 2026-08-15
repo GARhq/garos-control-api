@@ -177,14 +177,16 @@ impl FirewallService {
             self.nft.delete_rule(handle).await.ok();
         }
         self.repo.delete(id).await?;
+        let row_id = row.id.clone();
+        let before_view = serde_json::to_value(view_from_row(row)).unwrap_or_default();
         self.audit
             .record(
                 None,
                 Some(actor),
                 "firewall.delete",
                 Some("firewall_rule"),
-                Some(&row.id),
-                Some(&serde_json::to_value(view_from_row(row)).unwrap_or_default()),
+                Some(&row_id),
+                Some(&before_view),
                 None,
                 None,
                 None,
