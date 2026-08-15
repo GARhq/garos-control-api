@@ -106,12 +106,12 @@ impl JwtService {
     /// fallback).
     pub fn new(settings: AuthSettings) -> Result<Self, AppError> {
         let (encoding, decoding) = if let Some(path) = settings.jwt_private_key_path.as_ref() {
-            let pem = std::fs::read(path)
+            let pem = std::fs::read_to_string(path)
                 .map_err(|e| AppError::Internal(anyhow::anyhow!("read private key: {e}")))?;
-            let enc = EncodingKey::from_rsa_pem(&pem)
+            let enc = EncodingKey::from_rsa_pem(pem.as_bytes())
                 .map_err(|e| AppError::Internal(anyhow::anyhow!("parse private key: {e}")))?;
             let dec = if let Some(pub_path) = settings.jwt_public_key_path.as_ref() {
-                let pub_pem = std::fs::read(pub_path).map_err(|e| {
+                let pub_pem: Vec<u8> = std::fs::read(pub_path).map_err(|e| {
                     AppError::Internal(anyhow::anyhow!("read public key: {e}"))
                 })?;
                 DecodingKey::from_rsa_pem(&pub_pem)
@@ -125,7 +125,7 @@ impl JwtService {
                 use rsa::pkcs8::{DecodePrivateKey, EncodePublicKey};
                 let rsa = rsa::RsaPrivateKey::from_pkcs8_pem(&pem)
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("parse rsa pkcs8: {e}")))?;
-                let pub_pem = rsa
+                let pub_pem: String = rsa
                     .to_public_key()
                     .to_public_key_pem(rsa::pkcs8::LineEnding::LF)
                     .map_err(|e| AppError::Internal(anyhow::anyhow!("pub pem: {e}")))?;
