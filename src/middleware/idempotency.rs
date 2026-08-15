@@ -10,8 +10,7 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
-use std::time::Instant as StdInstant;
+use std::time::{Duration, Instant as StdInstant};
 use axum::http::StatusCode;
 
 const MAX_BODY: usize = 4 * 1024 * 1024;
@@ -25,23 +24,28 @@ pub struct CachedResponse {
 }
 
 mod instant_serde {
+    use once_cell::sync::Lazy;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
-    use std::time::{SystemTime, UNIX_EPOCH};
+    use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-    pub fn serialize<S: Serializer>(t: &std::time::Instant, s: S) -> Result<S::Ok, S::Error> {
-        let dur = t.duration_since(*REGRESS).unwrap_or_default();
+    pub fn serialize<S: Serializer>(t: &Instant, s: S) -> Result<S::Ok, S::Error> {
+        // `saturating_duration_since` returns `Duration` directly, avoiding
+        // an `Instant::duration_since` Result that gets shadowed by chrono::Duration.
+        let dur = t.saturating_duration_since(*REGRESS);
         dur.as_secs().serialize(s)
     }
 
-    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<std::time::Instant, D::Error> {
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Instant, D::Error> {
         let secs = u64::deserialize(d)?;
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or(Duration::ZERO)
+            .as_secs();
         let offset = now.saturating_sub(secs);
-        Ok(*REGRESS + std::time::Duration::from_secs(offset))
+        Ok(*REGRESS + Duration::from_secs(offset))
     }
 
-    use once_cell::sync::Lazy;
-    static REGRESS: Lazy<std::time::Instant> = Lazy::new(std::time::Instant::now);
+    static REGRESS: Lazy<Instant> = Lazy::new(Instant::now);
 }
 
 #[derive(Debug, Default)]
@@ -64,7 +68,7 @@ impl IdempotencyStore {
             CachedResponse {
                 status,
                 body,
-                stored_at: Instant::now(),
+                stored_at: StdInstant::now(),
             },
         );
     }
@@ -84,7 +88,7 @@ impl IdempotencyStore {
     }
 
     pub fn gc(&self) {
-        let now = Instant::now();
+        let now = StdInstant::now();
         self.inner
             .retain(|_, v| now.duration_since(v.stored_at) <= self.ttl);
     }
