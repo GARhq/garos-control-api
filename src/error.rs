@@ -161,8 +161,10 @@ impl AppError {
 }
 
 impl From<tokio::time::error::Elapsed> for AppError {
-    fn from(elapsed: tokio::time::error::Elapsed) -> Self {
-        Self::Timeout(elapsed.duration())
+    fn from(_: tokio::time::error::Elapsed) -> Self {
+        // tokio 1.41+ made `Elapsed` opaque: no public accessor for the
+        // elapsed Duration. Caller can use the original deadline via context.
+        Self::Timeout(std::time::Duration::ZERO)
     }
 }
 

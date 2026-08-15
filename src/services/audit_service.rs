@@ -142,14 +142,13 @@ fn leef_encode(e: &AuditEntry) -> String {
         "LEEF:1.0|kryonix|garos|1.0|{}|",
         e.action.replace('\t', " ")
     );
-    let _ = writeln!(
-        s,
-        "devTime={}\tuserName={}\tsrc={}\tseverity={}",
+    s.push_str(&format!(
+        "devTime={}\tuserName={}\tsrc={}\tseverity={}\n",
         e.created_at.to_rfc3339(),
         e.actor_username.clone().unwrap_or_default(),
         e.ip.clone().unwrap_or_default(),
         if e.result == "success" { 1 } else { 7 }
-    );
+    ));
     s
 }
 
