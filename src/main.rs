@@ -171,12 +171,12 @@ async fn serve(
     let health_repo = ServiceHealthRepo::new(pool.clone());
 
     let realtime = RealtimeHub::new(2048);
-    let samba = Arc::new(SambaIntegration::new(settings.integrations.samba.clone(), settings.features.mock_integrations));
+    let _samba = Arc::new(SambaIntegration::new(settings.integrations.samba.clone(), settings.features.mock_integrations));
     let nix = Arc::new(NixIntegration::new(settings.integrations.nix.clone(), settings.features.mock_integrations));
     let btrfs = Arc::new(BtrfsIntegration::new(settings.integrations.btrfs.clone(), settings.features.mock_integrations));
     let nft = Arc::new(NftablesIntegration::new(settings.integrations.nftables.clone(), settings.features.mock_integrations));
     let systemd = Arc::new(SystemdIntegration::new(settings.integrations.systemd.clone(), settings.features.mock_integrations));
-    let journald = Arc::new(JournaldIntegration::new(settings.integrations.journald.clone(), settings.features.mock_integrations));
+    let _journald = Arc::new(JournaldIntegration::new(settings.integrations.journald.clone(), settings.features.mock_integrations));
     let wol = Arc::new(WolIntegration::new(settings.integrations.wol.clone(), settings.features.mock_integrations));
     let pxe = Arc::new(PxeIntegration::new(settings.integrations.pxe.clone(), settings.features.mock_integrations));
 

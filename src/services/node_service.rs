@@ -5,8 +5,8 @@ use crate::db::repositories::audit::AuditRepo;
 use crate::db::repositories::nodes::NodeRepo;
 use crate::domain::node::*;
 use crate::error::AppError;
-use crate::integrations::nix::{Nix, NixIntegration};
-use crate::integrations::pxe::{Pxe, PxeIntegration};
+use crate::integrations::nix::NixIntegration;
+use crate::integrations::pxe::PxeIntegration;
 use crate::integrations::wol::{Wol, WolIntegration};
 use crate::realtime::events::Event;
 use crate::realtime::hub::RealtimeHub;
@@ -181,7 +181,7 @@ impl NodeService {
         trace_id: Option<&str>,
     ) -> Result<NodeRow, AppError> {
         let _ = (actor, trace_id);
-        let node = self
+        let _node = self
             .repo
             .by_mac(mac)
             .await?

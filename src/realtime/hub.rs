@@ -79,7 +79,7 @@ impl RealtimeHub {
     }
 
     /// Filter: true if the event should be delivered to this client.
-    pub fn matches(id: ClientId, ev: &Event) -> bool {
+    pub fn matches(id: ClientId, _ev: &Event) -> bool {
         // We can't read the client's channel list without a callback into
         // the hub, so this is a no-op at the hub level — clients filter
         // after receiving by inspecting `Event::channel()`.

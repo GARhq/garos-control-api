@@ -3,9 +3,8 @@
 use crate::config::WolSettings;
 use crate::error::{AppError, IntegrationKind};
 use async_trait::async_trait;
-use std::net::{Ipv4Addr, SocketAddrV4};
+use std::net::SocketAddrV4;
 use tokio::net::UdpSocket;
-use uuid::Uuid;
 
 #[async_trait]
 pub trait Wol: Send + Sync {

@@ -2,7 +2,6 @@
 //! and stores the [`CurrentUser`] in request extensions.
 
 use crate::auth::extractor::CurrentUser;
-use crate::auth::jwt::JwtService;
 use crate::auth::jwt::Role;
 use crate::error::AppError;
 use crate::state::AppState;

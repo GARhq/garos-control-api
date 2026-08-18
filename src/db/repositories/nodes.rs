@@ -3,7 +3,7 @@
 use crate::db::models::node::NodeRow;
 use crate::db::pool::DbPool;
 use crate::error::AppError;
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use uuid::Uuid;
 
 #[derive(Clone)]

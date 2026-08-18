@@ -468,7 +468,7 @@ impl Settings {
     pub fn load_from(env: Option<&str>) -> Result<Self, config::ConfigError> {
         let _ = dotenvy::dotenv();
 
-        let mut builder = config::Config::builder()
+        let builder = config::Config::builder()
             .add_source(config::File::with_name("config/default").required(true))
             // Profile-specific overrides
             .add_source(

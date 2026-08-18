@@ -9,7 +9,6 @@ use std::process::Stdio;
 use std::time::Duration;
 use tokio::process::Command;
 use tokio::time::timeout;
-use uuid::Uuid;
 
 #[async_trait]
 pub trait Nftables: Send + Sync {

@@ -13,7 +13,6 @@ use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
 use std::num::NonZeroU32;
 use std::sync::Arc;
-use std::time::Duration;
 
 type Limiter = RateLimiter<NotKeyed, InMemoryState, DefaultClock>;
 

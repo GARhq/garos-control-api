@@ -9,7 +9,7 @@ use crate::config::Settings;
 use crate::handlers;
 use crate::middleware::cors as cors_layer;
 use crate::middleware::idempotency;
-use crate::middleware::ratelimit::{self, RateLimitRegistry};
+use crate::middleware::ratelimit::{self};
 use crate::middleware::request_id;
 use crate::state::AppState;
 use axum::middleware::{from_fn, from_fn_with_state};

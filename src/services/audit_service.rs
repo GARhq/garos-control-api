@@ -6,7 +6,6 @@ use crate::domain::audit::*;
 use crate::error::AppError;
 use validator::Validate;
 use chrono::{DateTime, Utc};
-use std::io::Write;
 
 pub struct AuditService {
     repo: AuditRepo,

@@ -5,7 +5,6 @@ use crate::domain::storage::{Drive, ScrubStatus, Snapshot, StoragePool};
 use crate::error::{AppError, IntegrationKind};
 use async_trait::async_trait;
 use nix::sys::statvfs;
-use serde::{Deserialize, Serialize};
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 use std::process::Stdio;

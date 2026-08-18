@@ -1,6 +1,5 @@
 //! JWT RS256 token issuance and verification.
 
-use crate::auth::password;
 use crate::config::AuthSettings;
 use crate::error::AppError;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
@@ -214,7 +213,7 @@ impl JwtService {
         validation.set_issuer(&[&self.settings.jwt_issuer]);
         validation.set_audience(&[&self.settings.jwt_audience]);
         let data = decode::<Claims>(token, &self.decoding, &validation)
-            .map_err(|e| AppError::Unauthorized)?;
+            .map_err(|_e| AppError::Unauthorized)?;
         if data.claims.kind != expected_kind {
             return Err(AppError::Unauthorized);
         }

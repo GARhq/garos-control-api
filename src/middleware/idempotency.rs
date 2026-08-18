@@ -28,14 +28,14 @@ mod instant_serde {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-    pub fn serialize<S: Serializer>(t: &Instant, s: S) -> Result<S::Ok, S::Error> {
+    pub(super) fn serialize<S: Serializer>(t: &Instant, s: S) -> Result<S::Ok, S::Error> {
         // `saturating_duration_since` returns `Duration` directly, avoiding
         // an `Instant::duration_since` Result that gets shadowed by chrono::Duration.
         let dur = t.saturating_duration_since(*REGRESS);
         dur.as_secs().serialize(s)
     }
 
-    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Instant, D::Error> {
+    pub(super) fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Instant, D::Error> {
         let secs = u64::deserialize(d)?;
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)

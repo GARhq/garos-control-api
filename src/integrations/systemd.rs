@@ -7,7 +7,7 @@ use crate::domain::service::{LogLine, ServiceHealth, ServiceView};
 use crate::error::{AppError, IntegrationKind};
 use async_trait::async_trait;
 use std::process::Stdio;
-use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::io::AsyncBufReadExt;
 use tokio::process::Command;
 use tokio::time::timeout;
 use tracing::warn;

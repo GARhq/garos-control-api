@@ -1,6 +1,5 @@
 //! HTTP request/response logging middleware.
 
-use axum::body::Body;
 use axum::extract::Request;
 use axum::middleware::Next;
 use axum::response::Response;
