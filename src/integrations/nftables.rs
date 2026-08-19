@@ -308,6 +308,7 @@ mod tests {
     use super::*;
     use crate::db::models::firewall_rule::FirewallRuleRow;
     use chrono::Utc;
+    use uuid::Uuid;
 
     fn rule(port: i32, action: &str) -> FirewallRuleRow {
         FirewallRuleRow {

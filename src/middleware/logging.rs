@@ -48,6 +48,7 @@ mod tests {
     use super::*;
     use axum::routing::get;
     use axum::Router;
+    use axum::body::Body;
     use tower::ServiceExt;
 
     async fn ok() -> &'static str {
