@@ -34,8 +34,7 @@ pub fn build_router(state: AppState, settings: &Arc<Settings>) -> Router {
         .route("/docs", get(serve_swagger_ui))
         .route("/api-docs/openapi.json", get(serve_openapi))
         .route("/api/auth/login", post(handlers::auth::login))
-        .route("/api/auth/refresh", post(handlers::auth::refresh))
-        .route("/api/garos/nodes/{mac}/heartbeat", post(handlers::nodes::heartbeat));
+        .route("/api/auth/refresh", post(handlers::auth::refresh));
 
     // Authenticated routes — require a valid JWT.
     //
