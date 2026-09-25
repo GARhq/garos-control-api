@@ -94,9 +94,17 @@
               type = types.nullOr types.path;
               default = null;
             };
+            environmentFile = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = "Path to an EnvironmentFile (e.g. from sops-nix) containing secret GAROS_* variables.";
+            };
           };
 
           config = mkIf config.services.garos-backend.enable {
+            # Automatically generate configFile from settings if not explicitly provided
+            services.garos-backend.configFile = mkIf (config.services.garos-backend.settings != {})
+              (mkDefault ((pkgs.formats.toml {}).generate "garos-config.toml" config.services.garos-backend.settings));
             users.users = mkIf (config.services.garos-backend.user == "garos") {
               garos = {
                 isSystemUser = true;
@@ -139,6 +147,7 @@
                 PrivateTmp = true;
                 ReadWritePaths = [ config.services.garos-backend.dataDir ];
                 Environment = "RUST_LOG=info,garos_backend=info";
+                EnvironmentFile = mkIf (config.services.garos-backend.environmentFile != null) config.services.garos-backend.environmentFile;
               };
             };
 

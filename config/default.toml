@@ -26,8 +26,10 @@ access_token_ttl_secs = 900
 refresh_token_ttl_secs = 604800
 argon2_cost = 65540
 idempotency_ttl_secs = 86400
-# For dev. In production, set jwt_secret via env or use a key pair.
-jwt_secret = "dev-secret-change-me-please-this-must-be-long-enough-32+"
+# SECURITY: Never hardcode secrets here. Use `sops-nix` to inject `GAROS_AUTH__JWT_PRIVATE_KEY_PATH`
+# pointing to a PEM file, or set `GAROS_AUTH__JWT_SECRET` as an environment variable.
+# Example for dev:
+# jwt_secret = "dev-secret-change-me-please-this-must-be-long-enough-32+"
 
 [ratelimit]
 requests_per_minute = 600
