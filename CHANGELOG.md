@@ -1,3 +1,7 @@
+## [v0.2.0] - 2026-10-02
+
+- feat: devShell auto flake update on stale lock
+
 ## [v0.1.1] - 2026-10-02
 
 - fix: zero-warning build
