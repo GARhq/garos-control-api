@@ -6,7 +6,7 @@ use crate::error::AppError;
 use chrono::Utc;
 use uuid::Uuid;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct NodeRepo {
     pool: DbPool,
 }

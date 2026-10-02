@@ -26,6 +26,7 @@ pub trait Journald: Send + Sync {
     ) -> Result<tokio::sync::mpsc::Receiver<LogLine>, AppError>;
 }
 
+#[derive(Debug)]
 pub struct JournaldIntegration {
     settings: JournaldSettings,
     mock: bool,

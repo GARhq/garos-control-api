@@ -7,7 +7,6 @@ use crate::domain::service::{LogLine, ServiceHealth, ServiceView};
 use crate::error::{AppError, IntegrationKind};
 use async_trait::async_trait;
 use std::process::Stdio;
-use tokio::io::AsyncBufReadExt;
 use tokio::process::Command;
 use tokio::time::timeout;
 use tracing::warn;
@@ -30,6 +29,7 @@ pub trait Systemd: Send + Sync {
     async fn health(&self, name: &str, repo: &ServiceHealthRepo) -> Result<ServiceHealth, AppError>;
 }
 
+#[derive(Debug)]
 pub struct SystemdIntegration {
     settings: SystemdSettings,
     mock: bool,

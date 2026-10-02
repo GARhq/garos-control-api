@@ -14,6 +14,8 @@ use validator::Validate;
 use std::sync::Arc;
 use uuid::Uuid;
 
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct NodeService {
     repo: NodeRepo,
     audit: AuditRepo,

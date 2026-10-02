@@ -20,6 +20,7 @@ pub struct WolReceipt {
     pub port: u16,
 }
 
+#[derive(Debug)]
 pub struct WolIntegration {
     settings: WolSettings,
     mock: bool,

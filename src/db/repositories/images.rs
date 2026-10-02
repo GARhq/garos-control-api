@@ -5,7 +5,7 @@ use crate::db::pool::DbPool;
 use crate::error::AppError;
 use uuid::Uuid;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ImageRepo {
     pool: DbPool,
 }

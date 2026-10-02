@@ -11,6 +11,7 @@ use chrono::Utc;
 use std::sync::Arc;
 use uuid::Uuid;
 
+#[derive(Debug)]
 pub struct UserService {
     repo: UserRepo,
     jwt: Arc<JwtService>,

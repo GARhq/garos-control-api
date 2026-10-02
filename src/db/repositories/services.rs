@@ -4,7 +4,7 @@ use crate::db::models::service::ServiceHealthStateRow;
 use crate::db::pool::DbPool;
 use crate::error::AppError;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ServiceHealthRepo {
     pool: DbPool,
 }

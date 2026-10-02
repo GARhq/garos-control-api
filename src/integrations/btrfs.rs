@@ -31,6 +31,7 @@ pub trait Btrfs: Send + Sync {
     async fn drives(&self) -> Result<Vec<Drive>, AppError>;
 }
 
+#[derive(Debug)]
 pub struct BtrfsIntegration {
     settings: BtrfsSettings,
     mock: bool,

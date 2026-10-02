@@ -24,6 +24,7 @@ pub trait Nftables: Send + Sync {
     async fn validate(&self, rules: &[FirewallRuleRow]) -> Result<Vec<String>, AppError>;
 }
 
+#[derive(Debug)]
 pub struct NftablesIntegration {
     settings: NftablesSettings,
     mock: bool,

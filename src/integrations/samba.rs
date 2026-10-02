@@ -95,13 +95,14 @@ pub trait Samba: Send + Sync {
     async fn leave_station(&self, hostname: &str) -> Result<(), AppError>;
 }
 
+#[derive(Debug)]
 pub struct SambaIntegration {
     settings: SambaSettings,
     mock: bool,
     mock_data: parking_lot::Mutex<MockState>,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct MockState {
     users: Vec<SambaUser>,
     groups: Vec<SambaGroup>,

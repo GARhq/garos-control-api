@@ -10,6 +10,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Layer as _};
 
 /// Guard returned by [`init`] — flushing telemetry on drop.
+#[derive(Debug)]
 pub struct TelemetryGuard {
     provider: Option<TracerProvider>,
 }

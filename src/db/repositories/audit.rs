@@ -6,7 +6,7 @@ use crate::error::AppError;
 use serde_json::Value;
 use uuid::Uuid;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AuditRepo {
     pool: DbPool,
 }

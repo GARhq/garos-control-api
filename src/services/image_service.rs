@@ -13,6 +13,7 @@ use validator::Validate;
 use std::sync::Arc;
 use uuid::Uuid;
 
+#[derive(Debug)]
 pub struct ImageService {
     repo: ImageRepo,
     audit: AuditRepo,

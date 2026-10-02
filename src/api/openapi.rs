@@ -97,6 +97,7 @@ use utoipa::OpenApi;
         (name = "system", description = "Health, ready, docs, version"),
     ),
 )]
+#[derive(Debug)]
 pub struct ApiDoc;
 
 pub fn openapi() -> utoipa::openapi::OpenApi {

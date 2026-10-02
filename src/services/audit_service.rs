@@ -7,6 +7,7 @@ use crate::error::AppError;
 use validator::Validate;
 use chrono::{DateTime, Utc};
 
+#[derive(Debug)]
 pub struct AuditService {
     repo: AuditRepo,
 }

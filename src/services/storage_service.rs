@@ -10,6 +10,7 @@ use validator::Validate;
 use std::sync::Arc;
 use uuid::Uuid;
 
+#[derive(Debug)]
 pub struct StorageService {
     repo: StorageRepo,
     audit: AuditRepo,

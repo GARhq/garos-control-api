@@ -10,6 +10,7 @@ use prometheus::{
 #[cfg(target_os = "linux")]
 use prometheus::process_collector::ProcessCollector;
 
+#[derive(Debug)]
 pub struct Metrics {
     pub registry: Registry,
     pub http_requests_total: CounterVec,

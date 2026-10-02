@@ -17,7 +17,7 @@ use std::sync::Arc;
 type Limiter = RateLimiter<NotKeyed, InMemoryState, DefaultClock>;
 
 /// Shared map of `IpAddr -> per-IP rate limiter`.
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct RateLimitRegistry {
     inner: Arc<Mutex<HashMap<IpAddr, Arc<Limiter>>>>,
     rpm: u32,

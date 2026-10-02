@@ -9,7 +9,9 @@ use uuid::Uuid;
 /// Standard header name for the trace id.
 pub const HEADER: HeaderName = HeaderName::from_static("x-request-id");
 
-/// Task-local holding the trace id for the current request.
+// Task-local holding the trace id for the current request.
+// (Doc comment converted to non-doc because rustdoc does not generate
+//  documentation for macro invocations.)
 tokio::task_local! {
     pub static CURRENT_TRACE_ID: Uuid;
 }

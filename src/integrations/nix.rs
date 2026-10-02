@@ -43,6 +43,7 @@ pub trait Nix: Send + Sync {
     async fn eval_expression(&self, expr: &str) -> Result<String, AppError>;
 }
 
+#[derive(Debug)]
 pub struct NixIntegration {
     settings: NixSettings,
     mock: bool,

@@ -31,6 +31,7 @@ struct HubInner {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct ClientState {
     channels: Vec<Channel>,
 }

@@ -22,6 +22,7 @@ pub trait Pxe: Send + Sync {
     async fn render_grub(&self, image: &ImageRow) -> Result<String, AppError>;
 }
 
+#[derive(Debug)]
 pub struct PxeIntegration {
     settings: PxeSettings,
     mock: bool,

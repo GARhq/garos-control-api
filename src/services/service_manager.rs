@@ -6,6 +6,7 @@ use crate::error::AppError;
 use crate::integrations::systemd::{Systemd, SystemdIntegration};
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct ServiceManager {
     systemd: Arc<SystemdIntegration>,
     health_repo: ServiceHealthRepo,
